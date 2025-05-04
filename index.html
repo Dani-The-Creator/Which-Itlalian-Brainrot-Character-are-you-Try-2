@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Brain Rot Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #f3e8ff, #ffe4e6);
+      padding: 2rem;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .question {
+      margin-bottom: 1.5rem;
+    }
+    .option {
+      display: block;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background-color: #f3e8ff;
+      border: 1px solid #e9d5ff;
+      border-radius: 0.5rem;
+      cursor: pointer;
+    }
+    .option:hover {
+      background-color: #ddd6fe;
+    }
+    .result-box {
+      text-align: center;
+    }
+    .character-tile {
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      margin: 0.25rem;
+    }
+    .restart-btn {
+      background-color: #9333ea;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      margin-top: 1.5rem;
+    }
+    .restart-btn:hover {
+      background-color: #7e22ce;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="quiz">
+    <!-- Content will be dynamically inserted here -->
+  </div>
+
+  <script>
+    const characters = [
+      {
+        name: "Ballerina Cappuccina",
+        traits: ["emphatic", "friendly"],
+        color: "#fbcfe8",
+        description: "You're the sweetheart of the group! Always spreading positivity and making everyone feel welcome with your warm energy."
+      },
+      {
+        name: "Bombardino Crocodilo",
+        traits: ["angry", "aggressive"],
+        color: "#fecaca",
+        description: "Rawr! You don't take nonsense from anyone and aren't afraid to show your teeth when provoked."
+      },
+      {
+        name: "Tralalelo Tralala",
+        traits: ["cool", "silly"],
+        color: "#bfdbfe",
+        description: "Life's a musical and you're the star! You bring chaotic fun energy wherever you go."
+      },
+      {
+        name: "Tung Tung Tung Sahur",
+        traits: ["creepy", "unfriendly"],
+        color: "#e9d5ff",
+        description: "You've got that mysterious vibe that makes people both intrigued and slightly unsettled. Perfect for Halloween!"
+      },
+      {
+        name: "Cappuccino Assassin",
+        traits: ["mysterious", "interesting"],
+        color: "#e5e7eb",
+        description: "Smooth like espresso but deadly like... well, an assassin. People can't figure you out and that's how you like it."
+      },
+      {
+        name: "Chimpanzini Bananini",
+        traits: ["funny", "extroverted"],
+        color: "#fef9c3",
+        description: "Monkey business is your specialty! You're the life of the party with your wild antics and infectious laughter."
+      }
+    ];
+
+    const questions = [
+      {
+        text: "How do you react when someone cuts in line?",
+        options: [
+          { text: "Politely ask them to go to the back", traits: ["friendly"] },
+          { text: "Yell at them immediately", traits: ["angry", "aggressive"] },
+          { text: "Start singing about queue etiquette", traits: ["silly"] },
+          { text: "Stare at them intensely until they move", traits: ["creepy"] },
+          { text: "Secretly plot revenge", traits: ["mysterious"] },
+          { text: "Make monkey noises to embarrass them", traits: ["funny"] }
+        ]
+      },
+      {
+        text: "What's your ideal weekend activity?",
+        options: [
+          { text: "Helping friends with their problems", traits: ["emphatic"] },
+          { text: "Competitive sports (I must win!)", traits: ["aggressive"] },
+          { text: "Improv comedy class", traits: ["silly"] },
+          { text: "Exploring abandoned buildings", traits: ["creepy"] },
+          { text: "People-watching at cafes", traits: ["mysterious"] },
+          { text: "Organizing wild parties", traits: ["extroverted"] }
+        ]
+      },
+      {
+        text: "How would your friends describe you?",
+        options: [
+          { text: "The caring one who always listens", traits: ["friendly"] },
+          { text: "The one with anger issues", traits: ["angry"] },
+          { text: "The weird but fun one", traits: ["silly"] },
+          { text: "The slightly unsettling one", traits: ["creepy"] },
+          { text: "The mysterious one", traits: ["mysterious"] },
+          { text: "The life of the party", traits: ["extroverted"] }
+        ]
+      },
+      {
+        text: "Choose a superpower:",
+        options: [
+          { text: "Healing others' pain", traits: ["emphatic"] },
+          { text: "Super strength (for smashing)", traits: ["aggressive"] },
+          { text: "Making people laugh uncontrollably", traits: ["silly"] },
+          { text: "Night vision (for lurking)", traits: ["creepy"] },
+          { text: "Invisibility", traits: ["mysterious"] },
+          { text: "Infinite energy", traits: ["extroverted"] }
+        ]
+      }
+    ];
+
+    let currentQuestion = 0;
+    let answers = [];
+
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      const container = document.getElementById("quiz");
+      container.innerHTML = `
+        <h2>${q.text}</h2>
+        <div class="question">
+          ${q.options.map((opt, i) => 
+            `<div class="option" onclick="selectAnswer(${i})">${opt.text}</div>`
+          ).join('')}
+        </div>
+        <div style="text-align:center; font-size: 0.85rem; color: gray;">
+          Question ${currentQuestion + 1} of ${questions.length}
+        </div>
+      `;
+    }
+
+    function selectAnswer(index) {
+      const selected = questions[currentQuestion].options[index];
+      answers = answers.concat(selected.traits);
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      const count = {};
+      answers.forEach(t => count[t] = (count[t] || 0) + 1);
+
+      let best = characters[0];
+      let max = 0;
+
+      characters.forEach(c => {
+        const score = c.traits.reduce((sum, t) => sum + (count[t] || 0), 0);
+        if (score > max) {
+          max = score;
+          best = c;
+        }
+      });
+
+      const container = document.getElementById("quiz");
+      container.innerHTML = `
+        <div class="result-box">
+          <h2>You are <strong>${best.name}</strong>!</h2>
+          <p><em>Traits:</em> ${best.traits.join(", ")}</p>
+          <p style="margin: 1rem 0; font-style: italic;">"${best.description}"</p>
+          <h3>Meet the crew:</h3>
+          <div style="display: flex; flex-wrap: wrap;">
+            ${characters.map(c => 
+              `<div class="character-tile" style="background:${c.color};">
+                <strong>${c.name}</strong><br/>
+                <small>${c.traits.join(", ")}</small>
+              </div>`
+            ).join('')}
+          </div>
+          <button class="restart-btn" onclick="restartQuiz()">Take the quiz again</button>
+        </div>
+      `;
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      answers = [];
+      showQuestion();
+    }
+
+    // Start quiz
+    showQuestion();
+  </script>
+</body>
+</html>
